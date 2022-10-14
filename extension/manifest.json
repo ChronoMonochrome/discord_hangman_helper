@@ -1,0 +1,14 @@
+{
+    "manifest_version": 2,
+    "name": "Discord Hangman Helper",
+    "description": "A helper for Discord Hangman game",
+    "version": "0.0.1",
+    "permissions": [
+        "http://localhost:5000/*"
+    ],
+    "content_scripts": [{
+        "js": ["foreground.js"],
+        "matches": ["https://discord.com/*"],
+        "run_at": "document_end"
+    }]
+}
