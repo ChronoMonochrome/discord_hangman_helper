@@ -51,40 +51,33 @@ function main() {
 		sendToServer();
 }
 
-function getMessagesDiv() {
-	var all_divs = document.getElementsByTagName('div');
-	
-	var divs = [];
-	for (var i = 0; i < all_divs.length; i++) {
-		var div = all_divs[i];
+const CHAT_MSG_TAG = "chat-messages___chat-messages-";
 
-		if (div.className.match(/^messagesWrapper.*$/)) {
-			return div.innerHTML;
-		}
-	}
-	
+var msgsList = [];
+
+function getMsgId(msgDiv) {
+	var itemId = msgDiv.getAttribute("data-list-item-id");
+	if (itemId)
+		return itemId.split(CHAT_MSG_TAG)[1];
+
 	return null;
 }
 
-var lastSentPageContent = "random";
-
 function sendToServer() {
-	var pageContent = getMessagesDiv();
-	if (pageContent == null || pageContent == undefined)
-		return;
+	var allMsgs = document.querySelectorAll(`[data-list-item-id^="${CHAT_MSG_TAG}"]`);
 	
-	if (pageContent == lastSentPageContent) {
-		console.log("Already sent this content to server")
-		return;
-	}
 	
-	let xhr = new XMLHttpRequest();
-	xhr.open("POST", "http://localhost:5000/my_node");
-
-	xhr.setRequestHeader("Accept", "application/json");
-	xhr.setRequestHeader("Content-Type", "application/json");
-	xhr.send(pageContent);
-	lastSentPageContent = pageContent;
+	allMsgs.forEach((msg) => {
+		var msgId = getMsgId(msg);
+		if (msgsList.indexOf(msgId) == -1) {
+			msgsList.push(msgId);
+			let xhr = new XMLHttpRequest();
+			xhr.open("POST", "http://localhost:5000/my_node");
+			xhr.setRequestHeader("Accept", "application/json");
+			xhr.setRequestHeader("Content-Type", "application/json");
+			xhr.send(msg.innerHTML);
+		}
+	});
 }
 
 setTimeout(() => initLoop(), 100);

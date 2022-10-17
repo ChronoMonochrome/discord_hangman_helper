@@ -18,21 +18,21 @@ import re
 def home():
 	return "hello from flask!"
 	
-def getAuthor(messageSoup):
+def getAuthorText(messageSoup):
 	div = messageSoup.find('div', attrs={'class': re.compile('^contents.*')})
 	if div:
 		return div.text
 	else:
 		return ""
 		
-def getEmbedDesc(messageSoup):
+def getEmbedDescText(messageSoup):
 	div = messageSoup.find('div', attrs={'class': re.compile('^embedDescription.*')})
 	if div:
 		return div.text
 	else:
 		return ""
 		
-def getEmbedFooter(messageSoup):
+def getEmbedFooterText(messageSoup):
 	div = messageSoup.find('div', attrs={'class': re.compile('^embedFooter.*')})
 	if div:
 		return div.text
@@ -46,6 +46,7 @@ def getEmbedFields(htmlSoup):
 answers = open(os.path.join(app.config["DATAFRAMES_DIR"], "answers.txt"), "rb").read().decode("u8").split("\n")
 	
 def matchWord(s, letters_tried = []):
+	print("matchWord(\"%s\", \"%s\"" % (s, letters_tried))
 	print(s)
 	if s[0].isspace():
 		s = s[1:]
@@ -70,48 +71,17 @@ def filterTextByCircleSymbol(s):
 			res.append(line)
 			
 	return res
-	
-last_filtered_messages = []
 
 @app.route("/my_node", methods=['GET', 'POST'])
 def my_node():
 	global last_filtered_messages
 	if request.method == "POST":
-		htmlDoc = request.data
-		soup = BeautifulSoup(htmlDoc, 'html.parser')
+		soup = BeautifulSoup(request.data, 'html.parser')
 
-		#messages = soup.find_all('div', attrs={'class': re.compile('^message.*')})
 		messages = soup.find_all('code')
-		embedFooters = soup.find_all('span', attrs={'class': re.compile('^embedFooterText.*')})
-		last_message = [i.text for i in messages][-1]
-		letters_tried = [i for i in embedFooters[-1].text.replace(" ", "") if not i in last_message]
-		matchWord(last_message)
-		matchWord(last_message, letters_tried = letters_tried)
-
-		#filtered_messages = [message for message in messages if "Bouncer+BOT" in getAuthor(message)]
-
-		# if filtered_messages == last_filtered_messages:
-			# print("already have this list of messages, skipping")
-			# return "repeat"
-			
-		# last_filtered_messages = filtered_messages
-
-		#print([i.text for i in filtered_messages if "◯" in i.text])
-		#filtered_messages1 = [[line for line in i.text.split("\n") if "◯" in line] for i in filtered_messages]
-		#last_message = [msg[-1] for msg in filtered_messages1 if len(msg) >= 1][-1]
-		#print(last_message)
-		#matchWord(last_message)
-		#filtered_messages = [[getEmbedDesc(i), getEmbedFooter(i)] for i in messages]
-		#last_message = [[line for line in getEmbedDesc(i).split("\n") if "◯" in line] for i in messages if "◯" in getEmbedDesc(i)][-1][0]
-		#print(matchWord(last_message))
-		#if len(filtered_messages1) > 1:
-		#	print([i for i in filtered_messages1[-1][0].split("\n") if "◯" in i])
-		#if len(filtered_messages1) > 1:
-		#	filtered_messages2 = [i for i in filtered_messages1[-1][0].split("\n") if "◯" in i]
-		#	last_message = filtered_messages2[-1]
-		#	print(last_message)
-		#	matchWord(last_message)
-		
-		#print([i for i in filtered_messages1[-1][0].split("\n") if "◯" in i])
-		#print([i.text for i in getEmbedFields(soup)])
+		if messages:
+			message = messages[-1]
+			embedFooterText = getEmbedFooterText(message.parent.parent)
+			letters_tried = [i for i in embedFooterText.replace(" ", "") if not i in message.text]
+			matchWord(message.text, letters_tried = letters_tried)
 	return "hello from flask!"
