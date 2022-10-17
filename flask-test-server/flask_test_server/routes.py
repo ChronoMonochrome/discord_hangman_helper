@@ -43,19 +43,15 @@ def getEmbedFields(htmlSoup):
 	divs = htmlSoup.find_all('div', attrs={'class': re.compile('^embedFields.*')})
 	return divs
 	
-answers = open(os.path.join(app.config["DATAFRAMES_DIR"], "answers.txt"), "rb").read().decode("u8").split("\n")
-	
+answers = [i.lower() for i in open(os.path.join(app.config["DATAFRAMES_DIR"], "answers.txt"), "rb").read().decode("u8").split("\n")]
+
 def matchWord(s, letters_tried = []):
-	print("matchWord(\"%s\", \"%s\"" % (s, letters_tried))
+	print("matchWord(\"%s\", \"%s\")" % (s, letters_tried))
 	print(s)
-	if s[0].isspace():
-		s = s[1:]
-	s=s.replace(" ", "").replace("\u2000", " ").replace("◯", ".")
+	s=s.replace("  ", "\u2000").replace("◯", ".").replace(" ", "").replace("\u2000", " ").replace("  ", " ")
 	print(s)
-	s = s.capitalize()
+	s = s.lower()
 	letters_tried = list(letters_tried)
-	for i in list(letters_tried):
-		letters_tried.append(i.upper())
 	pattern = re.compile("^%s$"%s)
 	def reject(word):
 		for c in word:
